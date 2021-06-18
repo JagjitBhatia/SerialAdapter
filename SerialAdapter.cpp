@@ -62,7 +62,7 @@ void SerialAdapter::setRate(int rate) {
 bool SerialAdapter::connect() {
 	if(connected) {
 		std::cout << "Serial already connected!" << std::endl;
-		return false;
+		return true;
 	}
 
 	bool passed = true;
@@ -81,7 +81,7 @@ bool SerialAdapter::connect() {
 		std::cout << "Baud rate not set!" << std::endl;
 		passed = false;
 	}
-	
+
 	if(!passed) return false;
 
 	if((conn = open(path, flags)) < 0) {
@@ -90,7 +90,7 @@ bool SerialAdapter::connect() {
 
 	if(flock(conn, LOCK_EX | LOCK_NB) == -1) {
 		std::cout << "ERROR: Serial port with path '" << path << "' is already locked by another process." << std::endl;
-        return false;
+		return false;
 	}
 
 	struct termios tty;
@@ -100,45 +100,49 @@ bool SerialAdapter::connect() {
 		return false;
 	}
 
-    tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
-    tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
-    tty.c_cflag &= ~CSIZE; // Clear all bits that set the data size 
-    tty.c_cflag |= CS8; // 8 bits per byte (most common)
-    tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-    tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+	tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
+	tty.c_cflag &= ~CSIZE; // Clear all bits that set the data size 
+	tty.c_cflag |= CS8; // 8 bits per byte (most common)
+	tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+	tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
-    tty.c_lflag &= ~ICANON;
-    tty.c_lflag &= ~ECHO; // Disable echo
-    tty.c_lflag &= ~ECHOE; // Disable erasure
-    tty.c_lflag &= ~ECHONL; // Disable new-line echo
-    tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+	tty.c_lflag &= ~ICANON;
+	tty.c_lflag &= ~ECHO; // Disable echo
+	tty.c_lflag &= ~ECHOE; // Disable erasure
+	tty.c_lflag &= ~ECHONL; // Disable new-line echo
+	tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+	tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+	tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
 
-    tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-    tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-    // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
-    // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
+	tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+	tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+	// tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
+	// tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
 
-    tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
-    tty.c_cc[VMIN] = 0;
+	tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+	tty.c_cc[VMIN] = 0;
 
-    cfsetispeed(&tty, baud);
-    cfsetospeed(&tty, baud);
+	cfsetispeed(&tty, baud);
+	cfsetospeed(&tty, baud);
 
 	// Save tty settings, also checking for error
-    if (tcsetattr(conn, TCSANOW, &tty) != 0) {
-        std::cout << "ERROR " << errno << " from tcsetattr: " << strerror(errno) << std::endl;
-        return false;
-    }
+	if (tcsetattr(conn, TCSANOW, &tty) != 0) {
+		std::cout << "ERROR " << errno << " from tcsetattr: " << strerror(errno) << std::endl;
+		return false;
+	}
 
-    connected = true;
+	connected = true;
 	return true;
 }
 
 bool SerialAdapter::connect(int rate) {
 	setRate(rate);
 	return connect();
+}
+
+bool SerialAdapter::isConnected() {
+	return connected;
 }
 
 void SerialAdapter::disconnect() {

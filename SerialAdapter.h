@@ -35,6 +35,7 @@ class SerialAdapter {
 		bool connect();
 		bool connect(int rate);
 		void disconnect();
+		bool isConnected();
 		bool SerialWrite(char* buf, int size);
 		bool SerialRead(int size, char* buf);
 		bool SerialRead(char* &buf);
