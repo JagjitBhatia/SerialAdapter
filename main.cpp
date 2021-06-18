@@ -3,6 +3,7 @@
 // Example code
 
 int main() {
+	std::cout << "hello" << std::endl;
 	char* buf = new char[128];
 	
 	SerialAdapter serial = SerialAdapter((char*) "/dev/ttys0", O_RDWR, 9600);
@@ -12,4 +13,6 @@ int main() {
 
 	buf = (char*) "Let's write to this!";
 	serial.SerialWrite(buf, sizeof(buf));
+
+	return 0;
 }

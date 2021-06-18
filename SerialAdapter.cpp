@@ -100,7 +100,7 @@ bool SerialAdapter::connect() {
 		return false;
 	}
 
-	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+    tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
     tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
     tty.c_cflag &= ~CSIZE; // Clear all bits that set the data size 
     tty.c_cflag |= CS8; // 8 bits per byte (most common)
@@ -133,6 +133,7 @@ bool SerialAdapter::connect() {
     }
 
     connected = true;
+	std::cout << "Connection Successful!" << std::endl;
 	return true;
 }
 
