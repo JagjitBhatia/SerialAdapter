@@ -133,7 +133,6 @@ bool SerialAdapter::connect() {
     }
 
     connected = true;
-	std::cout << "Connection Successful!" << std::endl;
 	return true;
 }
 
